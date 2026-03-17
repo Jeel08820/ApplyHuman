@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — ApplyHuman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a class="navbar-brand" href="/">🤝 Apply<span>Human</span></a>
+      <div class="navbar-links">
+        <a href="/">Home</a>
+        <a href="dashboard.html">Seeker Dashboard</a>
+        <span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:20px;font-size:.78rem;font-weight:700;">ADMIN</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="section-sm">
+    <div class="container">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;">
+        <div>
+          <h1 style="font-size:1.7rem;font-weight:800;">Admin Panel</h1>
+          <p class="text-muted">Manage job seekers and log applications on their behalf.</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadData()">🔄 Refresh</button>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;" class="stats-grid">
+        <div class="card text-center">
+          <p style="font-size:2rem;font-weight:800;color:var(--primary);" id="stat-seekers">0</p>
+          <p class="text-muted" style="font-size:.85rem;">Total Seekers</p>
+        </div>
+        <div class="card text-center">
+          <p style="font-size:2rem;font-weight:800;color:var(--warning);" id="stat-pending">0</p>
+          <p class="text-muted" style="font-size:.85rem;">Pending Review</p>
+        </div>
+        <div class="card text-center">
+          <p style="font-size:2rem;font-weight:800;color:var(--accent);" id="stat-active">0</p>
+          <p class="text-muted" style="font-size:.85rem;">Active</p>
+        </div>
+        <div class="card text-center">
+          <p style="font-size:2rem;font-weight:800;color:#3730a3;" id="stat-apps">0</p>
+          <p class="text-muted" style="font-size:.85rem;">Applications Logged</p>
+        </div>
+      </div>
+
+      <div id="alert-container"></div>
+
+      <!-- Seekers table -->
+      <div class="card mb-3" style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">Job Seekers</h2>
+          <select class="form-control" id="filter-seeker-status" style="width:auto;padding:6px 12px;" onchange="renderSeekers()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div id="seekers-container">
+          <div class="loading-overlay"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Log Application Modal-like section -->
+      <div class="card" id="log-app-section" style="display:none;">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">📝 Log New Application</h2>
+        <p class="text-muted mb-3">Logging for: <strong id="log-seeker-name"></strong></p>
+        <form id="log-app-form" novalidate>
+          <input type="hidden" id="log-seeker-id" />
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="log-company">Company *</label>
+              <input class="form-control" type="text" id="log-company" placeholder="e.g. Google" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="log-job-title">Job Title *</label>
+              <input class="form-control" type="text" id="log-job-title" placeholder="e.g. Software Engineer" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="log-job-url">Job Posting URL</label>
+            <input class="form-control" type="url" id="log-job-url" placeholder="https://..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="log-notes">Notes</label>
+            <textarea class="form-control" id="log-notes" placeholder="e.g. Applied via LinkedIn Easy Apply, submitted cover letter, etc."></textarea>
+          </div>
+
+          <div style="display:flex;gap:12px;">
+            <button type="submit" class="btn btn-primary" id="log-submit-btn">Log Application</button>
+            <button type="button" class="btn btn-outline" onclick="closeLogForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Applications table (all) -->
+      <div class="card mt-4" style="margin-top:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+          <h2 style="font-size:1.1rem;font-weight:700;">All Applications</h2>
+          <select class="form-control" id="filter-app-status" style="width:auto;padding:6px 12px;" onchange="renderApplications()">
+            <option value="">All Statuses</option>
+            <option value="applied">Applied</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div id="apps-container">
+          <div class="loading-overlay"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2024 ApplyHuman. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <style>
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+  </style>
+
+  <script>
+    let allSeekers = [];
+    let allApplications = [];
+
+    function showAlert(message, type) {
+      const container = document.getElementById('alert-container');
+      container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTimeout(() => { container.innerHTML = ''; }, 5000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
+    function badgeHTML(status) {
+      return `<span class="badge badge-${escapeHtml(status)}">${escapeHtml(status)}</span>`;
+    }
+
+    function renderSeekers() {
+      const filterVal = document.getElementById('filter-seeker-status').value;
+      const seekers = filterVal ? allSeekers.filter(s => s.status === filterVal) : allSeekers;
+      const container = document.getElementById('seekers-container');
+
+      if (!seekers.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">👤</div><p>No seekers found.</p></div>`;
+        return;
+      }
+
+      const rows = seekers.map(s => {
+        const appCount = allApplications.filter(a => a.seekerId === s.id).length;
+        return `
+          <tr>
+            <td><strong>${escapeHtml(s.name)}</strong><br><span style="color:var(--text-muted);font-size:.83rem;">${escapeHtml(s.email)}</span></td>
+            <td>${escapeHtml(s.jobTitle)}</td>
+            <td>${escapeHtml(s.location || '—')}</td>
+            <td>${badgeHTML(s.status)}</td>
+            <td style="text-align:center;">${appCount}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-accent" onclick="openLogForm('${escapeHtml(s.id)}', '${escapeHtml(s.name)}')">+ Log App</button>
+                <select class="form-control" style="padding:4px 8px;font-size:.8rem;width:auto;" onchange="updateSeekerStatus('${escapeHtml(s.id)}', this.value)">
+                  <option value="">Change Status…</option>
+                  <option value="pending" ${s.status === 'pending' ? 'selected' : ''}>Pending</option>
+                  <option value="active" ${s.status === 'active' ? 'selected' : ''}>Active</option>
+                  <option value="paused" ${s.status === 'paused' ? 'selected' : ''}>Paused</option>
+                  <option value="completed" ${s.status === 'completed' ? 'selected' : ''}>Completed</option>
+                </select>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name / Email</th>
+                <th>Target Role</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th style="text-align:center;">Apps</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderApplications() {
+      const filterVal = document.getElementById('filter-app-status').value;
+      const applications = filterVal ? allApplications.filter(a => a.status === filterVal) : allApplications;
+      const container = document.getElementById('apps-container');
+
+      if (!applications.length) {
+        container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No applications logged yet.</p></div>`;
+        return;
+      }
+
+      const seekerMap = {};
+      allSeekers.forEach(s => { seekerMap[s.id] = s.name; });
+
+      const rows = applications.map(app => `
+        <tr>
+          <td>${escapeHtml(seekerMap[app.seekerId] || app.seekerId)}</td>
+          <td><strong>${escapeHtml(app.company)}</strong></td>
+          <td>${escapeHtml(app.jobTitle)}</td>
+          <td>${app.jobUrl ? `<a href="${escapeHtml(app.jobUrl)}" target="_blank" rel="noopener">View ↗</a>` : '—'}</td>
+          <td>
+            <select class="form-control" style="padding:4px 8px;font-size:.8rem;width:auto;" onchange="updateAppStatus('${escapeHtml(app.id)}', this.value)">
+              <option value="applied"   ${app.status === 'applied'   ? 'selected' : ''}>Applied</option>
+              <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
+              <option value="offer"     ${app.status === 'offer'     ? 'selected' : ''}>Offer</option>
+              <option value="rejected"  ${app.status === 'rejected'  ? 'selected' : ''}>Rejected</option>
+            </select>
+          </td>
+          <td style="color:var(--text-muted);font-size:.85rem;">${new Date(app.appliedAt).toLocaleDateString()}</td>
+          <td style="font-size:.83rem;max-width:180px;">${escapeHtml(app.notes || '—')}</td>
+        </tr>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Seeker</th>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Posting</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    async function updateSeekerStatus(id, status) {
+      if (!status) return;
+      try {
+        const res = await fetch(`/api/seekers/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          const idx = allSeekers.findIndex(s => s.id === id);
+          if (idx !== -1) allSeekers[idx] = updated;
+          renderSeekers();
+          showAlert(`Status updated to "${status}".`, 'success');
+        }
+      } catch { showAlert('Failed to update status.', 'error'); }
+    }
+
+    async function updateAppStatus(id, status) {
+      try {
+        const res = await fetch(`/api/applications/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          const idx = allApplications.findIndex(a => a.id === id);
+          if (idx !== -1) allApplications[idx] = updated;
+          renderApplications();
+          // Update stat counts
+          document.getElementById('stat-apps').textContent = allApplications.length;
+          showAlert(`Application status updated to "${status}".`, 'success');
+        }
+      } catch { showAlert('Failed to update application status.', 'error'); }
+    }
+
+    function openLogForm(seekerId, seekerName) {
+      document.getElementById('log-seeker-id').value = seekerId;
+      document.getElementById('log-seeker-name').textContent = seekerName;
+      document.getElementById('log-app-section').style.display = 'block';
+      document.getElementById('log-app-section').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('log-company').focus();
+    }
+
+    function closeLogForm() {
+      document.getElementById('log-app-section').style.display = 'none';
+      document.getElementById('log-app-form').reset();
+    }
+
+    document.getElementById('log-app-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('log-submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Logging…';
+
+      const data = {
+        seekerId:  document.getElementById('log-seeker-id').value,
+        company:   document.getElementById('log-company').value.trim(),
+        jobTitle:  document.getElementById('log-job-title').value.trim(),
+        jobUrl:    document.getElementById('log-job-url').value.trim(),
+        notes:     document.getElementById('log-notes').value.trim(),
+      };
+
+      if (!data.company || !data.jobTitle) {
+        showAlert('Company and Job Title are required.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Log Application';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          allApplications.unshift(json);
+          renderApplications();
+          document.getElementById('stat-apps').textContent = allApplications.length;
+          closeLogForm();
+          showAlert(`✅ Application to ${json.company} logged successfully!`, 'success');
+        } else {
+          showAlert(json.error || 'Failed to log application.', 'error');
+        }
+      } catch { showAlert('Network error.', 'error'); }
+
+      btn.disabled = false;
+      btn.innerHTML = 'Log Application';
+    });
+
+    async function loadData() {
+      try {
+        const [seekersRes, appsRes] = await Promise.all([
+          fetch('/api/seekers'),
+          fetch('/api/applications'),
+        ]);
+        allSeekers = seekersRes.ok ? await seekersRes.json() : [];
+        allApplications = appsRes.ok ? await appsRes.json() : [];
+
+        // Stats
+        document.getElementById('stat-seekers').textContent = allSeekers.length;
+        document.getElementById('stat-pending').textContent = allSeekers.filter(s => s.status === 'pending').length;
+        document.getElementById('stat-active').textContent  = allSeekers.filter(s => s.status === 'active').length;
+        document.getElementById('stat-apps').textContent    = allApplications.length;
+
+        renderSeekers();
+        renderApplications();
+      } catch {
+        showAlert('Failed to load data. Is the server running?', 'error');
+      }
+    }
+
+    loadData();
+  </script>
+
+</body>
+</html>
