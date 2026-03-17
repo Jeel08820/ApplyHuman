@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get Started — ApplyHuman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a class="navbar-brand" href="/">🤝 Apply<span>Human</span></a>
+      <div class="navbar-links">
+        <a href="/">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="section-sm">
+    <div class="container" style="max-width:680px;">
+      <h1 style="font-size:1.9rem;font-weight:800;margin-bottom:8px;">Create your job seeker profile</h1>
+      <p class="text-muted mb-3">
+        Fill in your details below. Our human applier will start applying to matching jobs on your behalf within 24 hours.
+      </p>
+
+      <div id="alert-container"></div>
+
+      <div class="card">
+        <form id="apply-form" novalidate>
+
+          <h3 style="margin-bottom:20px;">👤 Personal Information</h3>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="name">Full Name *</label>
+              <input class="form-control" type="text" id="name" name="name" placeholder="Jane Smith" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address *</label>
+              <input class="form-control" type="email" id="email" name="email" placeholder="jane@example.com" required />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number</label>
+              <input class="form-control" type="tel" id="phone" name="phone" placeholder="+1 555-123-4567" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="linkedinUrl">LinkedIn Profile URL</label>
+              <input class="form-control" type="url" id="linkedinUrl" name="linkedinUrl" placeholder="https://linkedin.com/in/username" />
+            </div>
+          </div>
+
+          <hr class="divider" />
+          <h3 style="margin-bottom:20px;">💼 Job Preferences</h3>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="jobTitle">Target Job Title *</label>
+              <input class="form-control" type="text" id="jobTitle" name="jobTitle" placeholder="e.g. Software Engineer, Product Manager" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="location">Preferred Location</label>
+              <input class="form-control" type="text" id="location" name="location" placeholder="e.g. Remote, New York NY, San Francisco CA" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="experienceLevel">Experience Level</label>
+              <select class="form-control" id="experienceLevel" name="experienceLevel">
+                <option value="entry">Entry Level (0–2 years)</option>
+                <option value="mid" selected>Mid Level (2–5 years)</option>
+                <option value="senior">Senior Level (5–10 years)</option>
+                <option value="lead">Lead / Manager (10+ years)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job Types</label>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                  <input type="checkbox" name="jobTypes" value="full-time" checked /> Full-Time
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                  <input type="checkbox" name="jobTypes" value="part-time" /> Part-Time
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                  <input type="checkbox" name="jobTypes" value="contract" /> Contract
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                  <input type="checkbox" name="jobTypes" value="internship" /> Internship
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="skills">Key Skills</label>
+            <input class="form-control" type="text" id="skills" name="skills" placeholder="e.g. JavaScript, React, Node.js, Python" />
+            <p class="form-hint">Separate skills with commas.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="targetCompanies">Target Companies (optional)</label>
+            <input class="form-control" type="text" id="targetCompanies" name="targetCompanies" placeholder="e.g. Google, Stripe, Airbnb" />
+            <p class="form-hint">Separate company names with commas. Leave blank to target all relevant companies.</p>
+          </div>
+
+          <hr class="divider" />
+          <h3 style="margin-bottom:20px;">📄 Resume</h3>
+
+          <div class="form-group">
+            <label class="form-label" for="resumeText">Resume / Work Experience Summary *</label>
+            <textarea class="form-control" id="resumeText" name="resumeText" rows="8"
+              placeholder="Paste your resume text here, or provide a summary of your work experience, education, and achievements. Our team will use this to tailor each application."
+              style="min-height:180px;"></textarea>
+            <p class="form-hint">Alternatively, email your resume file to <strong>resume@applyhuman.com</strong> after signing up.</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+            🚀 Create My Profile &amp; Start Applying
+          </button>
+          <p class="text-center text-muted mt-2" style="font-size:.85rem;">
+            By submitting, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>© 2024 ApplyHuman. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.getElementById('apply-form');
+    const alertContainer = document.getElementById('alert-container');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function showAlert(message, type) {
+      alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+      alertContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertContainer.innerHTML = '';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Submitting…';
+
+      const data = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim(),
+        linkedinUrl: form.linkedinUrl.value.trim(),
+        jobTitle: form.jobTitle.value.trim(),
+        location: form.location.value.trim(),
+        experienceLevel: form.experienceLevel.value,
+        skills: form.skills.value.split(',').map(s => s.trim()).filter(Boolean),
+        jobTypes: [...form.querySelectorAll('input[name="jobTypes"]:checked')].map(cb => cb.value),
+        targetCompanies: form.targetCompanies.value.split(',').map(s => s.trim()).filter(Boolean),
+        resumeText: form.resumeText.value.trim(),
+      };
+
+      if (!data.name || !data.email || !data.jobTitle) {
+        showAlert('Please fill in all required fields (Name, Email, Job Title).', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '🚀 Create My Profile &amp; Start Applying';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/seekers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+
+        if (!res.ok) {
+          showAlert(json.error || 'Something went wrong. Please try again.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '🚀 Create My Profile &amp; Start Applying';
+          return;
+        }
+
+        // Save seeker ID locally for the dashboard
+        localStorage.setItem('seekerId', json.id);
+        localStorage.setItem('seekerName', json.name);
+
+        showAlert('✅ Profile created! Redirecting to your dashboard…', 'success');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+
+      } catch {
+        showAlert('Network error. Please check your connection and try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '🚀 Create My Profile &amp; Start Applying';
+      }
+    });
+  </script>
+</body>
+</html>

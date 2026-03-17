@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — ApplyHuman</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a class="navbar-brand" href="/">🤝 Apply<span>Human</span></a>
+      <div class="navbar-links">
+        <a href="/">Home</a>
+        <span id="navbar-name" style="color:var(--text-muted);font-size:.9rem;"></span>
+        <a href="apply.html" class="btn btn-outline btn-sm">New Profile</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="section-sm">
+    <div class="container">
+
+      <!-- No seeker ID stored -->
+      <div id="no-seeker" class="hidden">
+        <div class="empty-state">
+          <div class="icon">🔍</div>
+          <h2 style="margin-bottom:8px;">No profile found</h2>
+          <p class="mb-3">You haven't created a job seeker profile yet.</p>
+          <a href="apply.html" class="btn btn-primary">Create your profile →</a>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Dashboard content -->
+      <div id="dashboard" class="hidden">
+
+        <!-- Profile summary -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;">
+          <div>
+            <h1 style="font-size:1.7rem;font-weight:800;" id="seeker-name"></h1>
+            <p class="text-muted" id="seeker-headline"></p>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <span id="seeker-status-badge"></span>
+            <a href="apply.html" class="btn btn-outline btn-sm">Update Profile</a>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;" class="stats-grid">
+          <div class="card text-center">
+            <p style="font-size:2rem;font-weight:800;color:var(--primary);" id="stat-total">0</p>
+            <p class="text-muted" style="font-size:.85rem;">Total Applications</p>
+          </div>
+          <div class="card text-center">
+            <p style="font-size:2rem;font-weight:800;color:#3730a3;" id="stat-applied">0</p>
+            <p class="text-muted" style="font-size:.85rem;">Applied</p>
+          </div>
+          <div class="card text-center">
+            <p style="font-size:2rem;font-weight:800;color:var(--accent);" id="stat-interview">0</p>
+            <p class="text-muted" style="font-size:.85rem;">Interviews 🎉</p>
+          </div>
+          <div class="card text-center">
+            <p style="font-size:2rem;font-weight:800;color:var(--warning);" id="stat-offer">0</p>
+            <p class="text-muted" style="font-size:.85rem;">Offers</p>
+          </div>
+        </div>
+
+        <!-- Status message -->
+        <div id="status-banner" class="alert alert-info mb-3 hidden"></div>
+
+        <!-- Applications table -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+            <h2 style="font-size:1.1rem;font-weight:700;">Application History</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <select class="form-control" id="filter-status" style="width:auto;padding:6px 12px;">
+                <option value="">All Statuses</option>
+                <option value="applied">Applied</option>
+                <option value="interview">Interview</option>
+                <option value="offer">Offer</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="applications-container">
+            <div class="empty-state">
+              <div class="icon">📋</div>
+              <p>No applications yet — our team will start applying soon!</p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /#dashboard -->
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>© 2024 ApplyHuman. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <style>
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+  </style>
+
+  <script>
+    const seekerId = localStorage.getItem('seekerId');
+
+    const noSeeker = document.getElementById('no-seeker');
+    const loading  = document.getElementById('loading');
+    const dashboard = document.getElementById('dashboard');
+
+    function badgeHTML(status) {
+      return `<span class="badge badge-${status}">${status}</span>`;
+    }
+
+    function renderApplicationsTable(applications) {
+      if (!applications.length) {
+        return `<div class="empty-state"><div class="icon">📋</div><p>No applications yet — our team will start applying soon!</p></div>`;
+      }
+      const rows = applications.map(app => `
+        <tr>
+          <td><strong>${escapeHtml(app.company)}</strong></td>
+          <td>${escapeHtml(app.jobTitle)}</td>
+          <td>${app.jobUrl ? `<a href="${escapeHtml(app.jobUrl)}" target="_blank" rel="noopener">View Posting ↗</a>` : '—'}</td>
+          <td>${badgeHTML(app.status)}</td>
+          <td style="color:var(--text-muted);font-size:.85rem;">${new Date(app.appliedAt).toLocaleDateString()}</td>
+          <td style="font-size:.85rem;max-width:200px;">${escapeHtml(app.notes || '—')}</td>
+        </tr>
+      `).join('');
+      return `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Posting</th>
+                <th>Status</th>
+                <th>Date Applied</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
+    let allApplications = [];
+
+    function applyFilter() {
+      const filterVal = document.getElementById('filter-status').value;
+      const filtered = filterVal ? allApplications.filter(a => a.status === filterVal) : allApplications;
+      document.getElementById('applications-container').innerHTML = renderApplicationsTable(filtered);
+    }
+
+    document.getElementById('filter-status').addEventListener('change', applyFilter);
+
+    async function loadDashboard() {
+      if (!seekerId) {
+        loading.classList.add('hidden');
+        noSeeker.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const [seekerRes, appsRes] = await Promise.all([
+          fetch(`/api/seekers/${seekerId}`),
+          fetch(`/api/applications?seekerId=${seekerId}`),
+        ]);
+
+        if (!seekerRes.ok) {
+          loading.classList.add('hidden');
+          noSeeker.classList.remove('hidden');
+          return;
+        }
+
+        const seeker = await seekerRes.json();
+        const applications = appsRes.ok ? await appsRes.json() : [];
+
+        allApplications = applications;
+
+        // Populate header
+        document.getElementById('seeker-name').textContent = seeker.name;
+        document.getElementById('seeker-headline').textContent =
+          `${seeker.jobTitle}${seeker.location ? ' · ' + seeker.location : ''}`;
+        document.getElementById('seeker-status-badge').innerHTML = badgeHTML(seeker.status);
+        document.getElementById('navbar-name').textContent = seeker.name;
+
+        // Stats
+        document.getElementById('stat-total').textContent = applications.length;
+        document.getElementById('stat-applied').textContent = applications.filter(a => a.status === 'applied').length;
+        document.getElementById('stat-interview').textContent = applications.filter(a => a.status === 'interview').length;
+        document.getElementById('stat-offer').textContent = applications.filter(a => a.status === 'offer').length;
+
+        // Status banner
+        const banner = document.getElementById('status-banner');
+        if (seeker.status === 'pending') {
+          banner.textContent = '⏳ Your profile is under review. Our team will start applying within 24 hours.';
+          banner.classList.remove('hidden');
+        } else if (seeker.status === 'active') {
+          banner.className = 'alert alert-success mb-3';
+          banner.textContent = '✅ Your profile is active. Our team is actively applying to jobs on your behalf!';
+          banner.classList.remove('hidden');
+        } else if (seeker.status === 'paused') {
+          banner.className = 'alert alert-info mb-3';
+          banner.textContent = '⏸ Your job search is paused. Contact us to resume.';
+          banner.classList.remove('hidden');
+        } else if (seeker.status === 'completed') {
+          banner.className = 'alert alert-success mb-3';
+          banner.textContent = '🎉 Congratulations! You landed a job. Your search is complete!';
+          banner.classList.remove('hidden');
+        }
+
+        // Render applications
+        document.getElementById('applications-container').innerHTML = renderApplicationsTable(applications);
+
+        loading.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+
+      } catch {
+        loading.classList.add('hidden');
+        noSeeker.classList.remove('hidden');
+      }
+    }
+
+    loadDashboard();
+  </script>
+
+</body>
+</html>
